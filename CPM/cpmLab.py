@@ -18,7 +18,7 @@ def loadData(filename):
     times = np.fromstring(timesraw,sep=" ").astype(np.int16)
     
     edgesraw = f.readline()
-    edgesraw = np.fromstring(edgesraw,sep=" ").astype(np.int16)-1
+    edgesraw = np.fromstring(edgesraw,sep=" ").astype(np.int16)
     edges = edgesraw.reshape((-1,2),order='C')
 
     # print("times: ", times)
@@ -28,11 +28,12 @@ def loadData(filename):
 
 
 
-def topologicalSortKahn(V,E):
+def topologicalSortKahn(V,e):
+    E = e - 1
     indegree = defaultdict(int)
     N = [i for i in range(0,len(V))]
     Q = []
-    TO = []
+    TO = [0]
     
     for e in E[:,1]:
         indegree[e] += 1
@@ -43,7 +44,7 @@ def topologicalSortKahn(V,E):
 
     while Q:
         node = Q.pop(0)
-        TO.append(node)
+        TO.append(node + 1)
 
         neighbours = []
         for e in E:
@@ -54,11 +55,8 @@ def topologicalSortKahn(V,E):
             indegree[n] -= 1
             if indegree[n] == 0:
                 Q.append(n)
-
-
-    newV = [V[i] for i in TO]
-    newE = np.array([E[i] for i in TO])
-    return newV, newE, TO
+    TO.append(len(TO))
+    return TO
 
 # V,E = loadData("data10")
 # V,E, TO = topologicalSortKahn(V,E)
