@@ -58,8 +58,19 @@ print("earlyStart earlyFinish lateStart lateFinish:")
 for i in range (1, len(ES)-1):
     print(str(ES[i]) + " " + str(EF[i]) + " " + str(LS[i]) + " " + str(LF[i]))
 
+def findCPM(ES,EF,LS,LF):
+    cpm = []
+    for i in range (1, len(ES)-1):
+        if ES[i] == LS[i]:
+            cpm.append([i,ES[i],EF[i]])
+    cpm = sorted(cpm, key=lambda x: x[1])
+    return cpm
 
+cpm = findCPM(ES,EF,LS,LF)
 
+print("critical path:")
+for i in range (0, len(cpm)):
+    print(cpm[i][0],cpm[i][1],cpm[i][2]) 
 
 def CPM_V2(V,E):
     max_value = -1
