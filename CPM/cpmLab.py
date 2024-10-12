@@ -19,4 +19,3 @@ def loadData(filename):
     return times, edges
 
 
-loadData("data10")
