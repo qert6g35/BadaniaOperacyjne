@@ -29,37 +29,37 @@ def loadData(filename):
 
 
 
-# def topologicalSortKahn(V,e):
-#     E = e - 1
-#     indegree = defaultdict(int)
-#     N = [i for i in range(0,len(V))]
-#     Q = []
-#     TO = [0]
+def topologicalSortKahn(V,e):
+    E = e - 1
+    indegree = defaultdict(int)
+    N = [i for i in range(0,len(V))]
+    Q = []
+    TO = [0]
     
-#     for e in E[:,1]:
-#         indegree[e] += 1
+    for e in E[:,1]:
+        indegree[e] += 1
 
-#     for n in N:
-#         if indegree[n] == 0:
-#             Q.append(n)
+    for n in N:
+        if indegree[n] == 0:
+            Q.append(n)
 
-#     while Q:
-#         node = Q.pop(0)
-#         TO.append(node + 1)
+    while Q:
+        node = Q.pop(0)
+        TO.append(node + 1)
 
-#         neighbours = []
-#         for e in E:
-#             if e[0] == node:
-#                 neighbours.append(e[1])
+        neighbours = []
+        for e in E:
+            if e[0] == node:
+                neighbours.append(e[1])
 
-#         for n in neighbours:
-#             indegree[n] -= 1
-#             if indegree[n] == 0:
-#                 Q.append(n)
-#     TO.append(len(TO))
-#     return TO
+        for n in neighbours:
+            indegree[n] -= 1
+            if indegree[n] == 0:
+                Q.append(n)
+    TO.append(len(TO))
+    return TO
 
-V,E = loadData("pert_wzor")
+# V,E = loadData("pert_wzor")
 # V,E, TO = topologicalSortKahn(V,E)
 
-print(V)
+# print(V)
