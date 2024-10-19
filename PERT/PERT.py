@@ -126,10 +126,10 @@ def findCPM(ES,EF,LS,LF):
     cpm = sorted(cpm, key=lambda x: x[1])
     return cpm
 
-t,sig,data = GenerateData(100000)
+# t,sig,data = GenerateData(2,5)
 
-print(t)
-print(sum(data)/len(data))
+# print(t)
+# print(sum(data)/len(data))
 #t,sig = runPERTfor("pert_wzor")
 
 ##print(dystrybuanta(17,t,sig))
