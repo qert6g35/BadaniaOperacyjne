@@ -1,8 +1,13 @@
 import numpy as np
 from pathlib import Path
 from pertTools import loadData, topologicalSortKahn
+import scipy.stats as st
 
+def dystrybuantaODWR(X,t,sig):
+    return st.norm.ppf(q=X/100,loc=t,scale=sig)
 
+def dystrybuanta(X,t,sig):
+    return st.norm.cdf((X - t)/sig)*100
 
 def runPERTfor(filename):
     V_data,E = loadData(filename)
@@ -137,12 +142,11 @@ def findCPM(ES,EF,LS,LF):
 
 
 
+t,sig = runPERTfor("pert_wzor")
 
+print(dystrybuanta(17,t,sig))
 
-print(runPERTfor("pert_wzor"))
-
-
-
+print(dystrybuantaODWR(99,t,sig))
 
 
 
