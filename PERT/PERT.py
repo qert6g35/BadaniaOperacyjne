@@ -1,91 +1,77 @@
 import numpy as np
+import math
+import random as rnd
 from pathlib import Path
 from pertTools import loadData, topologicalSortKahn
 import scipy.stats as st
 
-def dystrybuantaODWR(X,t,sig):
-    return st.norm.ppf(q=X/100,loc=t,scale=sig)
-
-def dystrybuanta(X,t,sig):
-    return st.norm.cdf((X - t)/sig)*100
-
-def runPERTfor(filename):
-    V_data,E = loadData(filename)
+def GenerateData(n,n_instance): 
+    #
+    # args:
+    # n - ile danych chcemy wygenerować
+    # n_instance - jak dużą instancję chcemy wygenerować
+    #
+    # return:
+    # T,SIG - wiadomo theta i sigma wygenerowanej instancji
+    #  Data - wygenerowane czasy zakończeń
+    Data = np.array([])
+    V_data,E = prepData(n_instance)
     Vt = [ (v[0] + v[1]*4 + v[2])/6 for v in V_data]
     Vsig = [ np.power((-v[0] + v[2])/6,2) for v in V_data]
+    t, sig = runPERTfor(Vt,Vsig,E)
+    print(t,sig)
+    for _ in range(0,n):
+        V_instance = getInstance(Vt,Vsig)
+        Data = np.append(Data,runCPMfor(V_instance,E))
+
+    return t,sig,Data
+    
+    
+
+def prepData(number_of_V):
+    V = []
+    E = []
+    for v_count in range(0, number_of_V):
+        v_mean = rnd.randrange(10,50)
+        v_distubtion = rnd.randrange(1,math.ceil(v_mean * 0.2) + 1)
+        V = V + [[v_mean - v_distubtion ,v_mean,v_mean + v_distubtion]]
+        #print(V)
+        if(v_count > 0):
+            for _ in range(0,math.floor(math.sqrt(v_count + 1))):
+                #print(E)
+                connection = [rnd.randrange(0,v_count) + 1,v_count + 1]
+                E = E + [connection]
+                #print(E)
+    print(V)
+    print(E)
+    return V,E
+
+def getInstance(Vt,Vsig):
+    newV = np.array([])
+    for id in range(0,len(Vt)):
+        newV = np.append(newV, rnd.normalvariate(Vt[id],Vsig[id]))
+    return newV
+
+
+def dystrybuantaODWR(X,t,sig):# UWAGA X PODAJESZ JAKO NUMBER in (0-100)
+    return st.norm.ppf(q=X/100,loc=t,scale=sig)
+
+def dystrybuanta(X,t,sig):# UWAGA X PODAJESZ JAKO NUMBER in (0-100)
+    return st.norm.cdf((X - t)/sig)*100
+
+def runPERTfor(Vt,Vsig,E): # zwraca theta i sig dla podanych danych
     # print(Vt)
     # print(Vsig)
-    TO = topologicalSortKahn(Vt,E)
-    ES,EF,LS,LF = CPM(Vt,E,TO)
+    #TO = topologicalSortKahn(Vt,E)
+    ES,EF,LS,LF = CPM(Vt,E)
     cp = findCPM(ES,EF,LS,LF)
     t = cp[-1][-1]
     sig = np.sqrt(np.sum([Vsig[i[0] - 1] for i in cp]))
     return t,sig
 
-def runCPMfor(V,E,show_output = False):
-    
-    TO = topologicalSortKahn(V,E)
-    ES,EF,LS,LF = CPM(V,E,TO)
-
-    #wyświetlanie wyniku
-    if(show_output):
-        print("process time:")
-        print(max(ES[-1],EF[-1],LS[-1],LF[-1]))
-        print("earlyStart earlyFinish lateStart lateFinish:")
-        for i in range (1, len(ES)-1):
-            print(str(ES[i]) + " " + str(EF[i]) + " " + str(LS[i]) + " " + str(LF[i]))
-
-    cpm = findCPM(ES,EF,LS,LF)
-    if(show_output):
-        print("critical path:")
-        for i in range (0, len(cpm)):
-            print(cpm[i][0],cpm[i][1],cpm[i][2]) 
-
-    checkIfCorrectAnswer(filename,max(ES[-1],EF[-1],LS[-1],LF[-1]),ES[1:len(ES)-1],EF[1:len(ES)-1],LS[1:len(ES)-1],LF[1:len(ES)-1],cpm)
-
-
-
-def checkIfCorrectAnswer(filename,pt,ES,EF,LS,LF,cpm):
-    
-    my_file = Path("./"+filename+".txt")
-    
-    if not my_file.is_file():
-        my_file = Path("./CPM/"+filename+".txt")
-
-    f = open(my_file, "r")
-    
-    line = f.readline()
-    while(line[0] != "p"):
-        line = f.readline()
-    c_pt = f.readline()
-    if(int(c_pt)!= pt):
-        print("wrongPT")
-        print("our:" + str(pt))
-        print("should be: " + c_pt)
-        return
-    line = f.readline()
-    for i in range(0,len(ES)):
-        times = np.fromstring(f.readline(),sep=" ").astype(np.int16)
-        if(ES[i] - times[0] != 0):
-            print("Wrong ES in Job_" + str(i))
-        if(EF[i] - times[1] != 0):
-            print("Wrong EF in Job_" + str(i))
-        if(LS[i] - times[2] != 0):
-            print("Wrong LS in Job_" + str(i))
-        if(LF[i] - times[3] != 0):
-            print("Wrong LF in Job_" + str(i))
-
-    f.readline()
-
-    for i in range (0, len(cpm)):
-        times = np.fromstring(f.readline(),sep=" ").astype(np.int16)
-        if(cpm[i][1] - times[1] != 0 or cpm[i][0] - times[0] or cpm[i][2] - times[2]):
-            print("Wrong CPM for " + filename) 
-            return
-
-    print("correct answer for " + filename)
-
-    
+def runCPMfor(V,E): # zwraca czas wykonania dla podanego przykładu
+    ES,EF,LS,LF = CPM(V,E)
+    return max(ES[-1],EF[-1],LS[-1],LF[-1])
 
 def appendStartEnd(V,E):
     E_append = []
@@ -110,12 +96,12 @@ def appendStartEnd(V,E):
     return [0] + V + [0] , np.concatenate((E, E_append))
 
 
-def CPM(V,E,TO):
+def CPM(V,E):
     max_value = -1
     V,E = appendStartEnd(V,E)
     ES = [0] * len(V) #Early Start
     EF = [0] * len(V) #Early Finish
-    for v_i in TO:#range(0,len(V)): # v_i - V index 
+    for v_i in range(0,len(V)): # v_i - V index 
         for e in E:
             if e[1] == v_i:
                 max_value = max(ES[v_i],EF[e[0]])
@@ -123,7 +109,7 @@ def CPM(V,E,TO):
         EF[v_i] = ES[v_i] + V[v_i]
     LS = [max_value] * len(V) #Late Start
     LF = [max_value] * len(V) #LateFinish
-    for v_i in reversed(TO):#reversed(range(0,len(V))): # v_i - V index 
+    for v_i in reversed(range(0,len(V))): # v_i - V index 
         for e in E:
             if e[0] == v_i:
                 LF[v_i] = min(LF[v_i],LS[e[1]])
@@ -140,13 +126,15 @@ def findCPM(ES,EF,LS,LF):
     cpm = sorted(cpm, key=lambda x: x[1])
     return cpm
 
+t,sig,data = GenerateData(100000)
 
+print(t)
+print(sum(data)/len(data))
+#t,sig = runPERTfor("pert_wzor")
 
-t,sig = runPERTfor("pert_wzor")
+##print(dystrybuanta(17,t,sig))
 
-print(dystrybuanta(17,t,sig))
-
-print(dystrybuantaODWR(99,t,sig))
+#print(dystrybuantaODWR(99,t,sig))
 
 
 
