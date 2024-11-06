@@ -3,44 +3,99 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
 
-n_prob = 5000
-t,sig,data = GenerateData(n_prob,20,prep_data_type = 2,use_m_data = False)
 
-# print(t)
-# print(sum(data)/len(data))
+n_probs = [100,1000,10000,100000]
 
-# t,sig = runPERTfor("pert_wzor")
-res = st.ecdf(data)
+datatypes = [0, 1, 2]
 
-# # X = np.linspace(0,1,100)
-ax = plt.subplot()
-res.cdf.plot(ax)
-x = np.linspace(0,
-                max(res.cdf.quantiles), n_prob)
-ax.plot(x, st.norm.cdf((x - t)/sig),
-       'r-', alpha=0.6, label='norm pdf')
-ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
-ax.legend(["empiryczna dystrybuanta","dystrybyuanta"])
-plt.show()
+n_instances = [5,9,10,20,50,70,100]
 
-# print(t)
-# print(sum(data)/len(data))
+n_instance = 9
+for n_prob in n_probs:
+       isdone = False
+       while isdone == False:
+              try:
+                     t,sig,data = GenerateData(n_prob,n_instance,prep_data_type = 0,use_m_data = True)
+                     isdone = True
+              except:
+                     print("ind poza zasięgiem")
 
-# t,sig = runPERTfor("pert_wzor")
-kde = st.gaussian_kde(data)
+       kde = st.gaussian_kde(data)
 
-# X = np.linspace(0,1,100)
-ax2 = plt.subplot()
-# res.plot(ax)
+       ax2 = plt.subplot()
+       
+       x = np.linspace(min(data),
+                     max(data), n_prob)
+       title = "Gęstości uzyskane dla parametrów: \n  n prób = "+str(n_prob)+", n wielkość = "+str(n_instance)+", dane od prowadzacego."
+       ax2.plot(x, kde(x))
+       ax2.plot(x, st.norm.pdf(x,loc = t,scale = sig),
+              'r-')
+       ax2.legend(["estymowana gęstość","zakładana gęstość"])
+       print(title)
+       plt.title(title)
+       plt.xlabel("Czas [Dni]")
+       plt.ylabel("Procent [%]")
+       # plt.show()    
+       filename = "g_"+str(n_prob)+"np_"+str(n_instance)+"ni_makdata.png"
+       plt.savefig("./PERT/plots/"+filename, format="png", dpi=300)
+       plt.close()
 
-x = np.linspace(min(data),
-                max(data), n_prob)
 
-ax2.plot(x, kde(x))
-ax2.plot(x, st.norm.pdf(x,loc = t,scale = sig),
-       'r-')
-# ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
-ax2.legend(["estymowana gestosc","gestosc"])
-plt.show()
+
+
+for n_prob in n_probs:
+       for n_instance in n_instances:
+              for datatype in datatypes:
+                     isdone = False
+                     while isdone == False:
+                            try:
+                                   t,sig,data = GenerateData(n_prob,n_instance,prep_data_type = datatype,use_m_data = False)
+                                   isdone = True
+                            except:
+                                   print("ind poza zasięgiem")
+                     # print(t)
+                     # print(sum(data)/len(data))
+
+                     # t,sig = runPERTfor("pert_wzor")
+                     # res = st.ecdf(data)
+
+                     # # X = np.linspace(0,1,100)
+                     # ax = plt.subplot()
+                     # res.cdf.plot(ax)
+                     # x = np.linspace(0,
+                     #                 max(res.cdf.quantiles), n_prob)
+                     # ax.plot(x, st.norm.cdf((x - t)/sig),
+                     #        'r-', alpha=0.6, label='norm pdf')
+                     # ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
+                     # ax.legend(["empiryczna dystrybuanta","dystrybyuanta"])
+                     # plt.show()
+
+                     # print(t)
+                     # print(sum(data)/len(data))
+
+                     # t,sig = runPERTfor("pert_wzor")
+                     kde = st.gaussian_kde(data)
+
+                     # X = np.linspace(0,1,100)
+                     ax2 = plt.subplot()
+                     # res.plot(ax)
+                     
+                     x = np.linspace(min(data),
+                                   max(data), n_prob)
+                     title = "Gęstości uzyskane dla parametrów: \n  n prób = "+str(n_prob)+", n wielkość = "+str(n_instance)+", nr typu gen. danych = "+str(datatype)+"."
+                     print(title)
+                     ax2.plot(x, kde(x))
+                     ax2.plot(x, st.norm.pdf(x,loc = t,scale = sig),
+                            'r-')
+                     # ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
+                     ax2.legend(["estymowana gęstość","zakładana gęstość"])
+                     
+                     plt.title(title)
+                     plt.xlabel("Czas [Dni]")
+                     plt.ylabel("Procent [%]")
+                     # plt.show()    
+                     filename = "g_"+str(n_prob)+"np_"+str(n_instance)+"ni_"+str(datatype)+"dt.png"
+                     plt.savefig("./PERT/plots/"+filename, format="png", dpi=300)
+                     plt.close()
 
 
