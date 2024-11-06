@@ -5,7 +5,7 @@ from pathlib import Path
 from pertTools import loadData, topologicalSortKahn
 import scipy.stats as st
 
-def GenerateData(n,n_instance): 
+def GenerateData(n,n_instance,use_m_data = False,Vt_sent = None,Vsig_sent = None): 
     #
     # args:
     # n - ile danych chcemy wygenerować
@@ -15,20 +15,55 @@ def GenerateData(n,n_instance):
     # T,SIG - wiadomo theta i sigma wygenerowanej instancji
     #  Data - wygenerowane czasy zakończeń
     Data = np.array([])
-    V_data,E = prepData(n_instance)
-    Vt = [ (v[0] + v[1]*4 + v[2])/6 for v in V_data]
-    Vsig = [ np.power((-v[0] + v[2])/6,2) for v in V_data]
+    if(use_m_data):
+        V_data,E = loadData("pert_wzor")
+    else:
+        V_data,E = prepData(n_instance)
+    if(Vt_sent == None):
+        Vt = [ (v[0] + v[1]*4 + v[2])/6 for v in V_data]
+    else:
+        Vt = Vt_sent
+    if(Vsig_sent == None):
+        Vsig = [ np.power((-v[0] + v[2])/6,2) for v in V_data]
+    else:
+        Vsig = Vsig_sent
+
     t, sig = runPERTfor(Vt,Vsig,E)
     print(t,sig)
     for _ in range(0,n):
-        V_instance = getInstance(Vt,Vsig)
+        V_instance = getInstance(V_data)
+        # V_instance = getInstance(Vt,Vsig)
         Data = np.append(Data,runCPMfor(V_instance,E))
+    
+    print(dystrybuanta(17,t,sig))
+    print(dystrybuantaODWR(99,t,sig))
 
     return t,sig,Data
     
     
 
 def prepData(number_of_V):
+    V = []
+    E = []
+    for v_count in range(0, number_of_V):
+        # help = [rnd.randrange(10,50),rnd.randrange(10,50),rnd.randrange(10,50)]
+        help = []
+        while len(help) < 3:
+            val = rnd.randrange(10,50)
+            if val not in help:
+                help.append(val)
+        help.sort()
+        V = V + [help]
+        #print(V)
+        if(v_count > 0):
+            for _ in range(0,math.floor(math.sqrt(v_count + 1))):
+                #print(E)
+                connection = [rnd.randrange(0,v_count) + 1,v_count + 1]
+                E = E + [connection]
+                #print(E)
+    return V,E
+
+def prepDataNorm(number_of_V):
     V = []
     E = []
     for v_count in range(0, number_of_V):
@@ -42,16 +77,23 @@ def prepData(number_of_V):
                 connection = [rnd.randrange(0,v_count) + 1,v_count + 1]
                 E = E + [connection]
                 #print(E)
-    print(V)
-    print(E)
     return V,E
 
-def getInstance(Vt,Vsig):
+def getInstanceNorm(Vt,Vsig):
     newV = np.array([])
     for id in range(0,len(Vt)):
-        newV = np.append(newV, rnd.normalvariate(Vt[id],Vsig[id]))
+        newV = np.append(newV, rnd.normalvariate(Vt[id],math.sqrt(Vsig[id])))
     return newV
 
+def getInstance(V):
+    newV = np.array([])
+    for id in range(0,len(V)):
+        # print("V:" + str(V[id]))
+        # print("0:" + str(V[id][0]))
+        # print("1:" + str(V[id][1]))
+        # print("2:" + str(V[id][2]))
+        newV = np.append(newV, np.random.triangular(V[id][0],V[id][1],V[id][2]))
+    return newV
 
 def dystrybuantaODWR(X,t,sig):# UWAGA X PODAJESZ JAKO NUMBER in (0-100)
     return st.norm.ppf(q=X/100,loc=t,scale=sig)
@@ -139,7 +181,7 @@ def findCPM(ES,EF,LS,LF):
 
 
 
-
+# print(prepData2(10))
 
 
 
