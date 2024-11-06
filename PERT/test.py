@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
 
-n_prob = 10000
-t,sig,data = GenerateData(n_prob,20,use_m_data = False)
+n_prob = 5000
+t,sig,data = GenerateData(n_prob,20,prep_data_type = 2,use_m_data = False)
 
 # print(t)
 # print(sum(data)/len(data))
