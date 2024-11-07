@@ -1,0 +1,7 @@
+Metoda PERT najlepiej sprawdziła się dla danych generowanych z symetrycznego rozkładu trójkątnego (datatype = 1). Empirycznie wyznaczony kształt gęstości dla datatype = 0 odbiega od teoretycznej gęstości ustalonej dla metody PERT, co może wynikać z asymetrii trójkątnego rozkładu generowanego z trzech losowych liczb. Istnieje prawdopodobieństwo, że przy większej liczbie próbek kształty gęstości zaczęłyby się pokrywać.
+
+Wraz ze wzrostem liczby próbek empirycznie wyznaczone kształty gęstości powinny coraz bardziej przypominać rozkład normalny. Taką zależność można zaobserwować dla danych typu datatype = 1.
+
+Metoda PERT została z powodzeniem wykorzystana do wyznaczania prawdopodobieństwa, że projekt zostanie ukończony w określonym czasie, a także do oszacowania liczby dni potrzebnych na jego realizację przy zadanym poziomie prawdopodobieństwa.
+
+Do oszacowania kształtu gęstości empirycznej zastosowano metodę estymacji jądrowej, dostępną w bibliotece SciPy. Dla danych dostarczonych przez prowadzącego, empirycznie wyznaczona gęstość pokrywa się z gęstością zakładaną, co sugeruje, że — podobnie jak w przypadku datatype = 1 — dane te mogły zostać wygenerowane z symetrycznego rozkładu.

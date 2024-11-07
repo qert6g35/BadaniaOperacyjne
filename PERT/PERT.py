@@ -38,15 +38,15 @@ def GenerateData(n,n_instance,use_m_data = False,prep_data_type = 0,Vt_sent = No
         Vsig = Vsig_sent
 
     t, sig = runPERTfor(Vt,Vsig,E)
-    print("t,sig:")
-    print(t,",",sig)
+    # print("t,sig:")
+    # print(t,",",sig)
     for _ in range(0,n):
         V_instance = getInstance(V_data)
         # V_instance = getInstance(Vt,Vsig)
         Data = np.append(Data,runCPMfor(V_instance,E))
     
-    print(dystrybuanta(17,t,sig))
-    print(dystrybuantaODWR(99,t,sig))
+    # print(dystrybuanta(17,t,sig))
+    # print(dystrybuantaODWR(99,t,sig))
 
     return t,sig,Data
     
@@ -187,5 +187,5 @@ def findCPM(ES,EF,LS,LF):
         if ES[i] == LS[i]:
             cpm.append([i,ES[i],EF[i]])
     cpm = sorted(cpm, key=lambda x: x[1])
-    print(cpm)
+    # print(cpm)
     return cpm
