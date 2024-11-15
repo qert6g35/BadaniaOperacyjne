@@ -31,5 +31,18 @@ def dijkstra(graph, source):
 
     return dist, prev
 
+def build_paths(prev):
+    paths = [[] for _ in range(len(prev))]
+    for i in range(0,len(prev)):
+        current = i
+        while current != None:
+            if prev[current]!= None or current==0:
+                paths[i].append(current)
+            current = prev[current]
 
-print(dijkstra(matrix_to_graph(loadData("MData5")),0))
+    return paths
+
+dist, prev = dijkstra(matrix_to_graph(loadData("MData5")),0)
+
+print(build_paths(prev))
+
