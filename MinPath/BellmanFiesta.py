@@ -33,4 +33,4 @@ def BellMyFord(DistMat):
                 # print("ans to:",mainID," POST swap is:",ans[mainID])
     return ans,ansTable
 
-print(BellMyFord(loadData("MData5")))
+# print(BellMyFord(loadData("MData5")))

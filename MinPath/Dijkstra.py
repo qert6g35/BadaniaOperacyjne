@@ -44,5 +44,5 @@ def build_paths(prev):
 
 dist, prev = dijkstra(matrix_to_graph(loadData("MData5")),0)
 
-print(build_paths(prev))
+# print(build_paths(prev))
 

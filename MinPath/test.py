@@ -1,46 +1,49 @@
-from PERT import GenerateData, runPERTfor, dystrybuantaODWR, dystrybuanta
+from Dijkstra import dijkstra, matrix_to_graph, build_paths
+from BellmanFiesta import BellMyFord
+from DataManagment import loadData
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
+import time
 
-n_prob = 5000
-t,sig,data = GenerateData(n_prob,20,prep_data_type = 2,use_m_data = False)
+n_probs = 100
+n_instances = [5,10,15,20,25]
 
-# print(t)
-# print(sum(data)/len(data))
+avg_times_dijkstra = []
+avg_times_bellman = []
 
-# t,sig = runPERTfor("pert_wzor")
-res = st.ecdf(data)
+for n_instance in n_instances:
+       instance = loadData("/Paths/MinPaths_data"+str(n_instance))
 
-# # X = np.linspace(0,1,100)
-ax = plt.subplot()
-res.cdf.plot(ax)
-x = np.linspace(0,
-                max(res.cdf.quantiles), n_prob)
-ax.plot(x, st.norm.cdf((x - t)/sig),
-       'r-', alpha=0.6, label='norm pdf')
-ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
-ax.legend(["empiryczna dystrybuanta","dystrybyuanta"])
+       times_dijkstra = []
+       times_bellman = []
+
+       for _ in range(n_probs):
+              graph = matrix_to_graph(instance)
+              source_vertex = 0
+
+              # Mierzenie czasu działania algorytmu Dijkstry
+              start_time = time.time()
+              dijkstra(graph, source_vertex)
+              elapsed_time = time.time() - start_time
+              times_dijkstra.append(elapsed_time)
+
+              # Mierzenie czasu działania algorytmu Bellmana-Forda
+              start_time = time.time()
+              BellMyFord(instance)  
+              elapsed_time = time.time() - start_time
+              times_bellman.append(elapsed_time)
+       
+       avg_times_dijkstra.append(np.mean(times_dijkstra))
+       avg_times_bellman.append(np.mean(times_bellman))
+
+plt.figure(figsize=(10, 6))
+plt.plot(n_instances, avg_times_dijkstra, label='Algorytm Dijkstry', marker='o')
+plt.plot(n_instances, avg_times_bellman, label='Algorytm Bellmana-Forda', marker='o')
+plt.xlabel('Liczba wierzchołków w instancji')
+plt.ylabel('Średni czas działania (s)')
+plt.title('Porównanie średniego czasu działania algorytmów Dijkstry i Bellmana-Forda')
+plt.legend()
+plt.grid(True)
 plt.show()
-
-# print(t)
-# print(sum(data)/len(data))
-
-# t,sig = runPERTfor("pert_wzor")
-kde = st.gaussian_kde(data)
-
-# X = np.linspace(0,1,100)
-ax2 = plt.subplot()
-# res.plot(ax)
-
-x = np.linspace(min(data),
-                max(data), n_prob)
-
-ax2.plot(x, kde(x))
-ax2.plot(x, st.norm.pdf(x,loc = t,scale = sig),
-       'r-')
-# ax.set_xlim(min(min(data),min(res.cdf.quantiles)),max(max(data),max(res.cdf.quantiles)))
-ax2.legend(["estymowana gestosc","gestosc"])
-plt.show()
-
-
