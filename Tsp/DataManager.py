@@ -1,8 +1,4 @@
 import numpy as np
-from pathlib import Path
-from collections import defaultdict
-
-np.random.seed(44)
 
 def generateCoordinates(n,max_coordinate_value=100):
     cooridnates = np.random.randint(0,max_coordinate_value+1,n*2).reshape([-1,2])
