@@ -4,37 +4,35 @@ from collections import defaultdict
 
 np.random.seed(44)
 
-def generateData(n,map_size=100):
-    G_x = (np.array([np.random.random_integers(0,map_size,n)]*n)).reshape([n,n])
-    G_y = (np.array([np.random.random_integers(0,map_size,n)]*n)).reshape([n,n])
-    dist_matrix = np.zeros([n,n])
-    Gx = G_x - G_x.T
-    Gy = G_y - G_y.T
-    dist_matrix = Gx*Gx + Gy*Gy
-    dist_matrix = dist_matrix
+def generateCoordinates(n,max_coordinate_value=100):
+    cooridnates = np.random.randint(0,max_coordinate_value+1,n*2).reshape([-1,2])
+    return cooridnates
+
+def generateDistanceMatrix(n,max_coordinate_value=100):
+
+    coordinates = generateCoordinates(n,max_coordinate_value)
+
+    x_coor = (np.array([coordinates[:,0]]*n)).reshape([n,n])
+    y_coor = (np.array([coordinates[:,1]]*n)).reshape([n,n])
+
+    x_dist = x_coor - x_coor.T
+    y_dist = y_coor - y_coor.T
+
+    dist_matrix = np.sqrt(np.power(x_dist,2) + np.power(y_dist,2))
+
     return dist_matrix
 
+def coordinatesToDistMatrix(coordinates):
 
-print(generateData(10))
+    n = coordinates.shape[0]
 
+    x_coor = (np.array([coordinates[:,0]]*n)).reshape([n,n])
+    y_coor = (np.array([coordinates[:,1]]*n)).reshape([n,n])
 
+    x_dist = x_coor - x_coor.T
+    y_dist = y_coor - y_coor.T
 
-def loadData(filename):
-    
-    my_file = Path("./"+filename+".txt")
-    
-    if not my_file.is_file():
-        my_file = Path("./MinPath/"+filename+".txt")
+    dist_matrix = np.sqrt(np.power(x_dist,2) + np.power(y_dist,2))
 
-    f = open(my_file, "r")
-    try:
-        count = int(f.readline())
-    except:
-        return None
-    
-    line = ""
-    for _ in range(0,count):
-        line += f.readline()[0:-1]
+    return dist_matrix
 
-    Out = np.fromstring(line,sep=" ").astype(np.int16)
-    return Out.reshape((-1,count),order='C')
