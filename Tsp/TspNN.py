@@ -147,14 +147,38 @@ def NN(distance_matrix, start_node=0):
     return path, round(total_distance)
 
 
+def swap(permutation,V):
+    reorder = [i for i in range(0,len(permutation))]
+    reorder = reorder[:V[0]]+reorder[V[0]:V[1]+1][::-1]+reorder[V[1]+1:]
+    print(reorder)
+    new_permutation = [permutation[i] for i in reorder]
+    return new_permutation
+
+def check(distance_matrix,pi,V):
+    return (distance_matrix[pi[V[0]]][pi[V[0]+1]] + distance_matrix[pi[V[1]]][pi[V[1]+1]]) - (distance_matrix[pi[V[0]]][pi[V[1]]] + distance_matrix[pi[V[0]+1]][pi[V[1]+1]])
+
+def twoOpt(dist_matrix,pi,iter):
+    permutation = pi
+    for i in range(iter):
+        V = [random.randint(1,len(pi)-2),random.randint(1,len(pi)-2)]
+        afterSwap = check(dist_matrix,permutation,V)
+        if afterSwap < 0:
+            permutation = swap(permutation,V)
+    return permutation
+
 # Example usage
-coordinates = generateCoordinates(20)
+coordinates = generateCoordinates(10)
 distMatrix = coordinatesToDistMatrix(coordinates)
 
 pathNN, distNN = NN(distMatrix)
 pathFI, distFI = FI(distMatrix)
+# 
+# pathNN = [0,1,2,3,4,5,6,7,8,9,0]
+
+newPathNN = twoOpt(distMatrix,pathNN,1)
 
 print("FI Path:", pathNN, ", distance: ", distNN)
-print("NN Path:", pathFI, ", distance: ", distFI)
+print("NN Path:", newPathNN, ", distance: ", distFI)
 
-plot_path(coordinates,[pathFI,pathNN],[distFI,distNN],["FI","NN"]) ## tak na szybko :)
+# plot_path(coordinates,[pathFI,pathNN],[distFI,distNN],["FI","NN"]) ## tak na szybko :)
+# plot_path(coordinates,[pathNN,newPathNN],[distNN,distNN],["NN","NN2opt"]) ## tak na szybko :)
