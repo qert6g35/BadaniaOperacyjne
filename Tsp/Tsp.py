@@ -12,7 +12,7 @@ def generateCoordinates(n,max_coordinate_value=100):
 
 def generateDistanceMatrix(n,max_coordinate_value=100):
 
-    coordinates = DATA.generateCoordinates(n,max_coordinate_value)
+    coordinates = generateCoordinates(n,max_coordinate_value)
 
     x_coor = (np.array([coordinates[:,0]]*n)).reshape([n,n])
     y_coor = (np.array([coordinates[:,1]]*n)).reshape([n,n])
@@ -147,89 +147,14 @@ def NN(distance_matrix, start_node=0):
     return path, round(total_distance)
 
 
-
-def swap(permutation,V):
-    V.sort()
-    reorder = [i for i in range(0,len(permutation))]
-    reorder = reorder[:V[0]]+reorder[V[0]:V[1]+1][::-1]+reorder[V[1]+1:]
-    #print(reorder)
-    new_permutation = [permutation[i] for i in reorder]
-    return new_permutation
-
-def check(distance_matrix,pi,V):
-    return (distance_matrix[pi[V[0]]][pi[V[0]+1]] + distance_matrix[pi[V[1]]][pi[V[1]+1]]) - (distance_matrix[pi[V[0]]][pi[V[1]]] + distance_matrix[pi[V[0]+1]][pi[V[1]+1]])
-
-def twoOpt(dist_matrix,pi,iter):
-    permutation = pi
-    for i in range(iter):
-        V = [random.randint(1,len(pi)-2),random.randint(1,len(pi)-2)]
-        afterSwap = check(dist_matrix,permutation,V)
-        if afterSwap < 0:
-            permutation = swap(permutation,V)
-    return permutation
-
-def f_celu(dist_matrix,permutation):
-    f_celu = dist_matrix[permutation[-1]][permutation[0]]
-    #print("dist_mat:",dist_matrix[permutation[-1]][permutation[0]]," fcelu:",f_celu)
-    for i in range(0,len(permutation)-1):
-        f_celu += dist_matrix[permutation[i]][permutation[i+1]]
-        #print("dist_mat:",dist_matrix[permutation[i]][permutation[i+1]]," fcelu:",f_celu)
-    return f_celu
-
-def chengeTemp(temp):
-    if(temp > 0.00000000000001):
-        return temp*0.999999
-    else:
-        return -1
-
-def acceptWorse(temp,valuechange):
-    if(math.exp(-valuechange/temp)>1):
-        print("f(t: ",temp," D: ",valuechange,")")
-        print(math.exp(-valuechange/temp))
-    return random.uniform(0,1) < math.exp(-valuechange/temp)
-
-def SA(dist_matrx,permutation):
-    permutation_values=[f_celu(dist_matrix=dist_matrx,permutation=permutation)]
-    #take_random_from
-    v = [0,0]
-    temp = 1
-    while(temp > 0):
-        v[0] = random.choice(permutation)
-        v[1] = random.choice(permutation)
-        while v[1] == v[0]:
-            v[1] = random.choice(permutation)
-        v.sort()
-        new_perm = swap(permutation,v)
-        new_perm_value = f_celu(dist_matrix=dist_matrx,permutation=new_perm)
-        if new_perm_value < permutation_values[-1]:
-            permutation = new_perm
-            permutation_values.append(new_perm_value)
-        else:
-            if acceptWorse(temp,new_perm_value-permutation_values[-1]):
-                permutation = new_perm
-                permutation_values.append(new_perm_value)
-        temp = chengeTemp(temp)
-    return permutation,permutation_values
 # Example usage
-coordinates = generateCoordinates(10)
+coordinates = generateCoordinates(20)
 distMatrix = coordinatesToDistMatrix(coordinates)
 
 pathNN, distNN = NN(distMatrix)
 pathFI, distFI = FI(distMatrix)
-# 
-# print(pathFI)
-# pre_prepare  = pathFI[:-1]
-# print(pre_prepare)
-print("start SA for FI permutation")
-saF_permutation, Fpermutation_value_history = SA(distMatrix,pathFI[:-1])
-print("start SA for NN permutation")
-saN_permutation, Npermutation_value_history = SA(distMatrix,pathNN[:-1])
-#print(swap([0,1,2,3,4,5,6,7,8,9],[3,9]))
-# newPathNN = twoOpt(distMatrix,pathNN,1)
 
-# print("FI Path:", pathNN, ", distance: ", distNN)
-# print("NN Path:", newPathNN, ", distance: ", distFI)
-print("saF_permutation:",saF_permutation)
-print("saN_permutation:",saN_permutation)
-plot_path(coordinates,[pathFI,saF_permutation + [saF_permutation[0]],pathNN,saN_permutation + [saN_permutation[0]]],[distFI,Fpermutation_value_history[-1],distNN,Npermutation_value_history[-1]],["FI","FI+SA","NN","NN+SA"]) ## tak na szybko :)
-# plot_path(coordinates,[pathNN,newPathNN],[distNN,distNN],["NN","NN2opt"]) ## tak na szybko :)
+print("FI Path:", pathNN, ", distance: ", distNN)
+print("NN Path:", pathFI, ", distance: ", distFI)
+
+plot_path(coordinates,[pathFI,pathNN],[distFI,distNN],["FI","NN"]) ## tak na szybko :)
