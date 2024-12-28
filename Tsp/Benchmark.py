@@ -19,7 +19,7 @@ for size in sizes:
     scoresSANN = []
     scoresSAFI = []
     for i in range(repeats):
-        print("repeat:",i,"/",repeats,", size: ",size)
+        print("repeat:",i+1,"/",repeats,", size: ",size)
 
         coordinates = generateCoordinates(size)
         distMatrix = coordinatesToDistMatrix(coordinates)
