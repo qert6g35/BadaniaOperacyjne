@@ -1,9 +1,47 @@
+from pathlib import Path
 import random
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as pcolors
 # from DataManager import generateDistanceMatrix
+
+def read_tsp_instance(file_path):
+    coordinates = []
+    my_file = Path("./"+file_path)
+    
+    if not my_file.is_file():
+        my_file = Path("./Tsp/"+file_path)
+
+    # Otwieramy plik
+    with open(my_file, 'r') as file:
+        for line in file:
+            # Rozdzielamy dane według białych znaków
+            parts = line.split()
+
+            # Konwertujemy odpowiednie dane do formatu float (szerokość, długość)
+            id_ = int(parts[0])  # Numer wierzchołka (id)
+            x = float(parts[1])  # Szerokość geograficzna
+            y = float(parts[2])  # Długość geograficzna
+            coordinates.append([x, y])  # Dodajemy współrzędne jako krotkę (x, y)
+    
+    return coordinates
+
+def loadDistanceMatrix(file_path):
+
+    coordinates = read_tsp_instance(file_path)
+    coordinates = np.array(coordinates).reshape([-1,2])
+    n = len(coordinates)
+    x_coor = (np.array([coordinates[:,0]]*n)).reshape([n,n])
+    y_coor = (np.array([coordinates[:,1]]*n)).reshape([n,n])
+
+    x_dist = x_coor - x_coor.T
+    y_dist = y_coor - y_coor.T
+
+    dist_matrix = np.sqrt(np.power(x_dist,2) + np.power(y_dist,2))
+
+    return dist_matrix
+
 
 
 def generateCoordinates(n,max_coordinate_value=100):
@@ -43,7 +81,7 @@ def plot_path(nodes, path,dists,titles):
     """Plots the given path using matplotlib."""
     fig, axs = plt.subplots(1, paths_n, figsize=(8*paths_n, 8))
     colors = list(pcolors.TABLEAU_COLORS.keys())
-    print(colors)
+    # print(colors)
     for j in range(len(path)):
         one_path = path[j]
         color = colors[j]
@@ -160,12 +198,17 @@ def NN(distance_matrix, start_node=0):
 
 
 
-def swap(permutation,V):
-    V.sort()
-    reorder = [i for i in range(0,len(permutation))]
-    reorder = reorder[:V[0]]+reorder[V[0]:V[1]+1][::-1]+reorder[V[1]+1:]
-    #print(reorder)
-    new_permutation = [permutation[i] for i in reorder]
+# def swap(permutation,V):
+#     V.sort()
+#     reorder = [i for i in range(0,len(permutation))]
+#     reorder = reorder[:V[0]]+reorder[V[0]:V[1]+1][::-1]+reorder[V[1]+1:]
+#     #print(reorder)
+#     new_permutation = [permutation[i] for i in reorder]
+#     return new_permutation
+
+def swap(permutation, v):
+    new_permutation = permutation[:]
+    new_permutation[v[0]], new_permutation[v[1]] = new_permutation[v[1]], new_permutation[v[0]]
     return new_permutation
 
 def check(distance_matrix,pi,V):
@@ -181,59 +224,62 @@ def twoOpt(dist_matrix,pi,iter):
     return permutation
 
 def f_celu(dist_matrix,permutation):
-    f_celu = dist_matrix[permutation[-1]][permutation[0]]
-    #print("dist_mat:",dist_matrix[permutation[-1]][permutation[0]]," fcelu:",f_celu)
-    for i in range(0,len(permutation)-1):
-        f_celu += dist_matrix[permutation[i]][permutation[i+1]]
-        #print("dist_mat:",dist_matrix[permutation[i]][permutation[i+1]]," fcelu:",f_celu)
-    return f_celu
+    total_distance = 0
+    permutation = permutation + [permutation[0]]
+    prev = permutation[0]
+    for i in permutation[1:]:
+        total_distance += dist_matrix[prev, i]
+        prev = i
 
-def changeTemp(temp, cf=0.99):
-    if(temp > 0.00000000000001):
-        return temp*cf
+    return total_distance
+
+def changeTemp(temp, cooling_rate=0.995,min_temp=1e-5):
+    if(temp > min_temp):
+        return temp*cooling_rate
     else:
         return -1
 
 def acceptWorse(temp,valuechange):
-    if(math.exp(-valuechange/temp)>1):
-        print("f(t: ",temp," D: ",valuechange,")")
-        print(math.exp(-valuechange/temp))
     return random.uniform(0,1) < math.exp(-valuechange/temp)
 
-def SA(dist_matrx,permutation,cf = 0.95):
-    permutation_values=[f_celu(dist_matrix=dist_matrx,permutation=permutation)]
-    #take_random_from
-    v = [0,0]
-    temp = 1
-    permutations = [permutation]
-    while(temp > 0.1):
-      
-        v[0] = random.choice(permutation)
-        v[1] = random.choice(permutation)
-        while v[1] == v[0]:
-            v[1] = random.choice(permutation)
-        v.sort()
-
-        new_perm = swap(permutation,v)
-        new_perm_value = f_celu(dist_matrix=dist_matrx,permutation=new_perm)
-        if new_perm_value < permutation_values[-1]:
-            permutations.append(new_perm)
-            permutation_values.append(new_perm_value)
+def SA(dist_matrx,_permutation = None,_temp=1000, cooling_rate=0.995,L = 10, min_temp=1e-5):
+    if _permutation == None:
+        permutation = [i for i in range(0,len(dist_matrx))]
+    else:
+        if _permutation[0] == _permutation[-1]:
+            permutation = _permutation[:-1]
         else:
-            if acceptWorse(temp,new_perm_value-permutation_values[-1]):
+            permutation = _permutation
+    temp = _temp
+    permutation_values=[f_celu(dist_matrix=dist_matrx,permutation=permutation)]
+    v = [0,0]
+    permutations = [permutation]
+    iters = L
+    
+    while(temp > 0):
+        for i in range(iters):
+            candidates = permutation.copy()
+            candidates.pop(0)
+            v[0] = random.choice(candidates)
+            candidates.remove(v[0])       
+            v[1] = random.choice(candidates)
+
+            new_perm = swap(permutation,v)
+            new_perm_value = f_celu(dist_matrix=dist_matrx,permutation=new_perm)
+
+            if new_perm_value < permutation_values[-1]:
                 permutations.append(new_perm)
                 permutation_values.append(new_perm_value)
-        temp = changeTemp(temp, cf)
+            else:
+                if acceptWorse(temp,new_perm_value-permutation_values[-1]):
+                    permutations.append(new_perm)
+                    permutation_values.append(new_perm_value)
+        temp = changeTemp(temp, cooling_rate, min_temp)
 
-    pi_id = permutation_values.index(min(permutation_values))
+    total_distance = min(permutation_values)
+    pi_id = permutation_values.index(total_distance)
     permutation = permutations[pi_id]
-
-    total_distance = 0
     permutation = permutation + [permutation[0]]
-    prev = permutation[0]
-    for i in permutation:
-        total_distance += dist_matrx[prev, i]
-        prev = i
 
     return permutation,round(total_distance)
 
@@ -241,8 +287,8 @@ def SA(dist_matrx,permutation,cf = 0.95):
 coordinates = generateCoordinates(10)
 distMatrix = coordinatesToDistMatrix(coordinates)
 
-pathNN, distNN = NN(distMatrix)
-pathFI, distFI = RandomPermutation(distMatrix)
+# pathNN, distNN = NN(distMatrix)
+# pathFI, distFI = RandomPermutation(distMatrix)
 
 # 
 # print(pathFI)
@@ -252,12 +298,13 @@ pathFI, distFI = RandomPermutation(distMatrix)
 # saF_permutation, Fpermutation_value_history = SA(distMatrix,pathFI[:-1])
 # print("start SA for NN permutation")
 # saN_permutation, Npermutation_value_history = SA(distMatrix,pathNN[:-1])
-#print(swap([0,1,2,3,4,5,6,7,8,9],[3,9]))
+# saN_permutation, Npermutation_value_history = SA(distMatrix)
+f_celu(dist_matrix=distMatrix,permutation=[0,1,2,3,4,5,6,7,8,9])
 # newPathNN = twoOpt(distMatrix,pathNN,1)
 
 # print("FI Path:", pathNN, ", distance: ", distNN)
 # print("NN Path:", pathFI, ", distance: ", distFI)
 # print("saF_permutation:",saF_permutation)
 # print("saN_permutation:",saN_permutation)
-# plot_path(coordinates,[pathFI,saF_permutation + [saF_permutation[0]],pathNN,saN_permutation + [saN_permutation[0]]],[distFI,Fpermutation_value_history,distNN,Npermutation_value_history],["FI","FI+SA","NN","NN+SA"]) ## tak na szybko :)
+# plot_path(coordinates,[pathFI,saF_permutation,pathNN,saN_permutation],[distFI,Fpermutation_value_history,distNN,Npermutation_value_history],["FI","FI+SA","NN","NN+SA"]) ## tak na szybko :)
 # plot_path(coordinates,[pathNN,newPathNN],[distNN,distNN],["NN","NN2opt"]) ## tak na szybko :)
