@@ -2,7 +2,7 @@
 from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
-from Tsp import FI, NN, RandomPermutation, plot_path,coordinatesToDistMatrix, generateCoordinates, SA
+from Tsp import FI, NN, RandomPermutation, plot_path,coordinatesToDistMatrix, generateCoordinates, twoOpt, tabuSearch
 
 results = []
 
@@ -13,9 +13,12 @@ sizes = [10,20,30,40,50,60,70,80,90] + sizes
 avr_scoresNN = []
 avr_scoresFI = []
 avr_scoresRP = []
-avr_scoresSARP = []
-avr_scoresSANN = []
-avr_scoresSAFI = []
+avr_scoresTONN = []
+avr_scoresTOFI = []
+avr_scoresTORP = []
+avr_scoresTSNN = []
+avr_scoresTSFI = []
+avr_scoresTSRP = []
 
 T0 = 74
 alpha = 0.9524385825925
@@ -26,9 +29,12 @@ for size in sizes:
     scoresNN = []
     scoresFI = []
     scoresRP = []
-    scoresSARP = []
-    scoresSANN = []
-    scoresSAFI = []
+    scoresTORP = []
+    scoresTONN = []
+    scoresTOFI = []
+    scoresTSRP = []
+    scoresTSNN = []
+    scoresTSFI = []
     for i in range(repeats):
         print("repeat:",i+1,"/",repeats,", size: ",size)
         coordinates = generateCoordinates(size)
@@ -41,9 +47,14 @@ for size in sizes:
         pathRP, distRP = RandomPermutation(distMatrix)
 
         # wyrzażanie dla NN, FI oraz random
-        saF_permutation, saF_dist = SA(distMatrix,pathFI[:-1], _temp=T0, cooling_rate=alpha, L=L, min_temp=T_min)
-        saN_permutation, saN_dist = SA(distMatrix,pathNN[:-1], _temp=T0, cooling_rate=alpha, L=L, min_temp=T_min)
-        saR_permutation, saR_dist = SA(distMatrix,pathRP[:-1], _temp=T0, cooling_rate=alpha, L=L, min_temp=T_min)
+        saF_permutation, toF_dist = twoOpt(distMatrix,pathFI[:-1])
+        saN_permutation, toN_dist = twoOpt(distMatrix,pathNN[:-1])
+        saR_permutation, toR_dist = twoOpt(distMatrix,pathRP[:-1])
+
+        # wyrzażanie dla NN, FI oraz random
+        saF_permutation, tsF_dist = tabuSearch(distMatrix,pathFI[:-1])
+        saN_permutation, tsN_dist = tabuSearch(distMatrix,pathNN[:-1])
+        saR_permutation, tsR_dist = tabuSearch(distMatrix,pathRP[:-1])
 
         # przeliczenie wyników procentowa lepszość od randomowej prermutacji
         comp_score = distNN
