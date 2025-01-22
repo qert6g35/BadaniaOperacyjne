@@ -6,9 +6,8 @@ from Tsp import FI, NN, RandomPermutation, plot_path,coordinatesToDistMatrix, ge
 
 results = []
 
-repeats = 100
-sizes = [100, 200]# 300]#, 400, 500]
-sizes = [10,20,30,40,50,60,70,80,90] + sizes
+repeats = 10
+sizes = [5,10,25,50,75,100]
 
 avr_scoresNN = []
 avr_scoresFI = []
@@ -21,15 +20,15 @@ avr_scoresTSFI = []
 avr_scoresTSRP = []
 
 for size in sizes:
-    scoresNN = []
-    scoresFI = []
-    scoresRP = []
-    scoresTORP = []
-    scoresTONN = []
-    scoresTOFI = []
-    scoresTSRP = []
-    scoresTSNN = []
-    scoresTSFI = []
+    scoresNN = 0
+    scoresFI = 0
+    scoresRP = 0
+    scoresTORP = 0
+    scoresTONN = 0
+    scoresTOFI = 0
+    scoresTSRP = 0
+    scoresTSNN = 0
+    scoresTSFI = 0
     for i in range(repeats):
         print("repeat:",i+1,"/",repeats,", size: ",size)
         coordinates = generateCoordinates(size)
@@ -52,31 +51,31 @@ for size in sizes:
         saR_permutation, tsR_dist = tabuSearch(distMatrix,pathRP[:-1])
 
         # przeliczenie wyników procentowa lepszość od randomowej prermutacji
-        comp_score = distNN
+        # comp_score = distNN
 
-        scoresNN.append(100*(distNN-comp_score)/comp_score)
-        scoresFI.append(100*(distFI-comp_score)/comp_score)
-        scoresRP.append(100*(distRP-comp_score)/comp_score)
-        scoresTORP.append(100*(toR_dist-comp_score)/comp_score)
-        scoresTONN.append(100*(toN_dist-comp_score)/comp_score)
-        scoresTOFI.append(100*(toF_dist-comp_score)/comp_score)
-        scoresTSRP.append(100*(tsR_dist-comp_score)/comp_score)
-        scoresTSRP.append(100*(tsN_dist-comp_score)/comp_score)
-        scoresTSFI.append(100*(tsF_dist-comp_score)/comp_score)
+        scoresNN += distNN
+        scoresFI += distFI 
+        scoresRP += distRP
+        scoresTORP += toR_dist
+        scoresTONN += toN_dist
+        scoresTOFI += toF_dist
+        scoresTSRP += tsR_dist
+        scoresTSNN += tsN_dist
+        scoresTSFI += tsF_dist
     # 1 - 2 / 2
 
 
-    avr_scoreNN=sum(scoresNN)/repeats
-    avr_scoreFI=sum(scoresFI)/repeats
-    avr_scoreRP=sum(scoresRP)/repeats
+    avr_scoreNN = scoresNN / repeats
+    avr_scoreFI = scoresFI / repeats
+    avr_scoreRP = scoresRP / repeats
 
-    avr_scoreTORP=sum(scoresTORP)/repeats
-    avr_scoreTONN=sum(scoresTONN)/repeats
-    avr_scoreTOFI=sum(scoresTOFI)/repeats
+    avr_scoreTORP = scoresTORP / repeats
+    avr_scoreTONN = scoresTONN / repeats
+    avr_scoreTOFI = scoresTOFI / repeats
 
-    avr_scoreTSRP=sum(scoresTSRP)/repeats
-    avr_scoreTSNN=sum(scoresTSNN)/repeats
-    avr_scoreTSFI=sum(scoresTSFI)/repeats
+    avr_scoreTSRP = scoresTSRP / repeats
+    avr_scoreTSNN = scoresTSNN / repeats
+    avr_scoreTSFI = scoresTSFI / repeats
 
 
     avr_scoresNN.append(avr_scoreNN)
@@ -97,62 +96,62 @@ for size in sizes:
         'scoreFI': avr_scoreFI,
         'scoreTORP': avr_scoreTORP,
         'scoreTONN': avr_scoreTONN,
-        'scoreTOFI': avr_scoresTOFI,
-        'scoreTSRP': avr_scoresTSRP,
-        'scoreTSNN': avr_scoresTSNN,
-        'scoreTSFI': avr_scoresTSFI
+        'scoreTOFI': avr_scoreTOFI,
+        'scoreTSRP': avr_scoreTSRP,
+        'scoreTSNN': avr_scoreTSNN,
+        'scoreTSFI': avr_scoreTSFI
     })
-
-plt.figure(figsize=(10, 6))
-plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
-# plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTONN, label='TONN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTOFI, label='TOFI', marker='o',alpha=0.7)
-# plt.plot(sizes, avr_scoresSARP, label='SARP', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSNN, label='TSNN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSFI, label='TSFI', marker='o',alpha=0.7)
-
-plt.xlabel('Liczba wierzchołków w instancji')
-plt.ylabel('(A-A*)/A*[%]')
-plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-plt.figure(figsize=(10, 6))
-plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTONN, label='TONN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTOFI, label='TOFI', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTORP, label='TORP', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSNN, label='TSNN', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSFI, label='TSFI', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSRP, label='TSRP', marker='o',alpha=0.7)
-plt.xlabel('Liczba wierzchołków w instancji')
-plt.ylabel('(A-A*)/A*[%]')
-plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-plt.figure(figsize=(10, 6))
-# plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
-# plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
-# plt.plot(sizes, avr_scoresSANN, label='SANN', marker='o',alpha=0.7)
-# plt.plot(sizes, avr_scoresSAFI, label='SAFI', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTORP, label='TORP', marker='o',alpha=0.7)
-plt.plot(sizes, avr_scoresTSRP, label='TSRP', marker='o',alpha=0.7)
-
-plt.xlabel('Liczba wierzchołków w instancji')
-plt.ylabel('(A-A*)/A*[%]')
-plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
-plt.legend()
-plt.grid(True)
-plt.show()
 
 df = pd.DataFrame(results)
 df.to_csv("tsp_benchmarak_results.csv", index=False)
 print("Wyniki zapisane do pliku tsp_results.csv")
+
+# plt.figure(figsize=(10, 6))
+# plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
+# # plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTONN, label='TONN', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTOFI, label='TOFI', marker='o',alpha=0.7)
+# # plt.plot(sizes, avr_scoresSARP, label='SARP', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTSNN, label='TSNN', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTSFI, label='TSFI', marker='o',alpha=0.7)
+
+# plt.xlabel('Liczba wierzchołków w instancji')
+# plt.ylabel('(A-A*)/A*[%]')
+# plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTONN, label='TONN', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTOFI, label='TOFI', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTORP, label='TORP', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTSNN, label='TSNN', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTSFI, label='TSFI', marker='o',alpha=0.7)
+plt.plot(sizes, avr_scoresTSRP, label='TSRP', marker='o',alpha=0.7)
+plt.xlabel('Liczba wierzchołków w instancji')
+plt.ylabel('(A-A*)/A*[%]')
+plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# plt.figure(figsize=(10, 6))
+# # plt.plot(sizes, avr_scoresNN, label='NN', marker='o',alpha=0.7)
+# # plt.plot(sizes, avr_scoresFI, label='FI', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresRP, label='RP', marker='o',alpha=0.7)
+# # plt.plot(sizes, avr_scoresSANN, label='SANN', marker='o',alpha=0.7)
+# # plt.plot(sizes, avr_scoresSAFI, label='SAFI', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTORP, label='TORP', marker='o',alpha=0.7)
+# plt.plot(sizes, avr_scoresTSRP, label='TSRP', marker='o',alpha=0.7)
+
+# plt.xlabel('Liczba wierzchołków w instancji')
+# plt.ylabel('(A-A*)/A*[%]')
+# plt.title('Porównanie różnych kombinacji algorytmów dla problemu TSP')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
