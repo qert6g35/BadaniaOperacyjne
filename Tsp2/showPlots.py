@@ -6,13 +6,13 @@ file_name = "tsp_benchmarak_results.csv"
 data = pd.read_csv(file_name)
 
 # Flags to control which plots to show
-show_basic = False
+show_basic = True
 show_twoOpt = True
 show_TabuSearch = True
 
 show_random = True
-show_Fi = False
-show_NN = False
+show_Fi = True
+show_NN = True
 
 To_FI = [ (data['scoreTOFI'][i] - data['scoreFI'][i])/data['scoreFI'][i] for i in range(0,data['scoreFI'].size) ]
 Ts_FI = [ (data['scoreTSFI'][i] - data['scoreFI'][i])/data['scoreFI'][i] for i in range(0,data['scoreFI'].size) ]
@@ -36,20 +36,21 @@ if show_basic:
 if show_twoOpt:
     # Plot TwoOpt scores
     if show_random:
-        plt.plot(data['size'], data['scoreTORP'], label='Score TORP', marker='o',color="green")
+        plt.plot(data['size'], data['scoreTORP'], label='Score TORP', marker='o', color="lightgreen")
     if show_NN:
-        plt.plot(data['size'], To_NN, label='Score TONN', marker='o',color="green")
+        plt.plot(data['size'], data['scoreTONN'], label='Score TONN', marker='o', color="green")
     if show_Fi:
-        plt.plot(data['size'], To_FI, label='Score TOFI', marker='o',color="green")
+        plt.plot(data['size'], data['scoreTOFI'], label='Score TOFI', marker='o', color="darkgreen")
 
 if show_TabuSearch:
     # Plot TabuSearch scores
     if show_random:
-        plt.plot(data['size'], data['scoreTSRP'], label='Score TSRP', marker='o',color="blue")
+        plt.plot(data['size'], data['scoreTSRP'], label='Score TSRP', marker='o', color="lightblue")
     if show_NN:
-        plt.plot(data['size'], Ts_NN, label='Score TSNN', marker='o',color="blue")
+        plt.plot(data['size'], data['scoreTSNN'], label='Score TSNN', marker='o', color="blue")
     if show_Fi:
-        plt.plot(data['size'], Ts_FI, label='Score TSFI', marker='o',color="blue")
+        plt.plot(data['size'], data['scoreTSFI'], label='Score TSFI', marker='o', color="darkblue")
+
 
 # Customize the plot
 plt.title("TSP Benchmark Results")
