@@ -342,7 +342,7 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
     
     return best_permutation, best_cost
 
-def twoOpt(dist_matrix,  _permutation = None):
+def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
     def f_celu(dist_matrix, permutation):
         return sum(dist_matrix[permutation[i-1]][permutation[i]] for i in range(len(permutation)))
 
@@ -365,7 +365,7 @@ def twoOpt(dist_matrix,  _permutation = None):
     best_permutation = permutation
     best_cost = f_celu(dist_matrix, best_permutation)
     
-    while True:
+    for _ in range(max_iter):
         neighbors = get_neighbors(best_permutation)
         costs = [f_celu(dist_matrix, n) for n in neighbors]
         min_cost = min(costs)
