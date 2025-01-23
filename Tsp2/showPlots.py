@@ -10,7 +10,7 @@ show_basic = True
 show_twoOpt = True
 show_TabuSearch = True
 
-show_random = True
+show_random = False
 show_Fi = True
 show_NN = True
 

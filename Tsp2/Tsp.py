@@ -285,7 +285,11 @@ def SA(dist_matrx,_permutation = None,_temp=1000, cooling_rate=0.995,L = 10, min
     return permutation,round(total_distance)
 
 def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000):
+
+    tabu_size = max(tabu_size,2* len(dist_matrix) - 1)
+
     def get_neighbors(permutation):
+        tabu_neighbors = []
         neighbors = []
         moves = []
         for i in range(len(permutation)):
@@ -294,6 +298,7 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
                 neighbor = neighbor[:i] + neighbor[i:j+1][::-1] + neighbor[j+1:]
                 neighbors.append(neighbor)
                 moves.append(str(i)+str(j))
+                #tabu_neighbors += [(sorted([permutation[i],permutation[i-1]]),sorted([permutation[j],permutation[j]]))]
         return neighbors, moves
 
     def f_celu(dist_matrix, permutation):
@@ -306,10 +311,11 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
         permutation = _permutation
 
     best_permutation = permutation
-    best_cost = f_celu(dist_matrix, permutation)
+    best_cost = [f_celu(dist_matrix, permutation)]
     tabu_list = []
-    
-    for _ in range(max_iter):
+    iters_done = 0
+    for iter in range(max_iter):
+        iters_done = iter
         neighbors, moves = get_neighbors(permutation)
         new_neighbors = []
         new_moves = []
@@ -321,6 +327,7 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
         moves = new_moves
 
         if not neighbors:
+            print("Tabu breakes at "+str(iter)+" No neighbors")
             break
         
         costs = [f_celu(dist_matrix, n) for n in neighbors]
@@ -330,16 +337,15 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
         best_neighbor = neighbors[id_move]
         move = moves[id_move]
         
-        if min_cost < best_cost:
-            best_cost = min_cost
-            best_permutation = best_neighbor
+        best_cost.append(min_cost)
+        best_permutation = best_neighbor
         
         permutation = best_neighbor
         tabu_list.append(move)
         
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
-    
+    print("Tabu done at "+str(iters_done))
     return best_permutation, best_cost
 
 def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
@@ -363,26 +369,42 @@ def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
         permutation = _permutation
 
     best_permutation = permutation
-    best_cost = f_celu(dist_matrix, best_permutation)
-    
-    for _ in range(max_iter):
+    best_cost = [f_celu(dist_matrix, best_permutation)]
+    iters_done = 0
+    for iter in range(max_iter):
         neighbors = get_neighbors(best_permutation)
         costs = [f_celu(dist_matrix, n) for n in neighbors]
         min_cost = min(costs)
         id = costs.index(min_cost)
-        if min_cost < best_cost:
+        if min_cost < best_cost[-1]:
             best_permutation = neighbors[id]
-            best_cost = min_cost
+            best_cost.append(min_cost)
+            iters_done = iter
         else:
+            iters_done = iter
             break
+    print("TwoOpt done at "+str(iters_done))
     return best_permutation, best_cost
 
-coordinates = generateCoordinates(40)
+coordinates = generateCoordinates(20)
 distMatrix = coordinatesToDistMatrix(coordinates)
 
-print(tabuSearch(distMatrix.copy()))
+_, scores = tabuSearch(distMatrix.copy())
+plt.plot(scores, label='Tabu Search', color="blue")
+_, scores = twoOpt(distMatrix.copy())
+plt.plot(scores, label='TwoOpt', color="green")
+plt.title("TSP Benchmark Results")
+plt.xlabel("Size")
+plt.ylabel("Scores")
+plt.legend()
+plt.grid(True)
 
-print(twoOpt(distMatrix.copy()))
+# Show the plot
+plt.tight_layout()
+plt.show()
+
+
+#print(twoOpt(distMatrix.copy()))
 # pathNN, distNN = NN(distMatrix)
 # pathFI, distFI = RandomPermutation(distMatrix)
 
@@ -395,7 +417,7 @@ print(twoOpt(distMatrix.copy()))
 # print("start SA for NN permutation")
 # saN_permutation, Npermutation_value_history = SA(distMatrix,pathNN[:-1])
 # saN_permutation, Npermutation_value_history = SA(distMatrix)
-f_celu(dist_matrix=distMatrix,permutation=[0,1,2,3,4,5,6,7,8,9])
+#f_celu(dist_matrix=distMatrix,permutation=[0,1,2,3,4,5,6,7,8,9])
 # newPathNN = twoOpt(distMatrix,pathNN,1)
 
 # print("FI Path:", pathNN, ", distance: ", distNN)
