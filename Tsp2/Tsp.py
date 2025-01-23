@@ -289,7 +289,6 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
     tabu_size = max(tabu_size,2* len(dist_matrix) - 1)
 
     def get_neighbors(permutation):
-        tabu_neighbors = []
         neighbors = []
         moves = []
         for i in range(len(permutation)):
@@ -297,8 +296,7 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
                 neighbor = permutation.copy()
                 neighbor = neighbor[:i] + neighbor[i:j+1][::-1] + neighbor[j+1:]
                 neighbors.append(neighbor)
-                moves.append(str(i)+str(j))
-                #tabu_neighbors += [(sorted([permutation[i],permutation[i-1]]),sorted([permutation[j],permutation[j]]))]
+                moves.append((i,j))
         return neighbors, moves
 
     def f_celu(dist_matrix, permutation):
@@ -351,15 +349,22 @@ def tabuSearch(dist_matrix, _permutation = None, tabu_size = 10, max_iter = 1000
 def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
     def f_celu(dist_matrix, permutation):
         return sum(dist_matrix[permutation[i-1]][permutation[i]] for i in range(len(permutation)))
+    
+    def f_diff(dist_matrix,permutation,i,j):
+        a, b = permutation[i - 1], permutation[i]
+        c, d = permutation[j], permutation[(j + 1) % len(permutation)]
+        return  dist_matrix[a][c] + dist_matrix[b][d] - dist_matrix[a][b] - dist_matrix[c][d]
 
     def get_neighbors(permutation):
         neighbors = []
+        swapped_values = []
         for i in range(len(permutation)):
             for j in range(i + 1, len(permutation)):
                 neighbor = permutation.copy()
                 neighbor = neighbor[:i] + neighbor[i:j+1][::-1] + neighbor[j+1:]
                 neighbors.append(neighbor)
-        return neighbors
+                swapped_values.append((i,j))
+        return neighbors,swapped_values
 
 
     if _permutation is None:
@@ -372,13 +377,14 @@ def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
     best_cost = [f_celu(dist_matrix, best_permutation)]
     iters_done = 0
     for iter in range(max_iter):
-        neighbors = get_neighbors(best_permutation)
-        costs = [f_celu(dist_matrix, n) for n in neighbors]
+        neighbors,swapped_values = get_neighbors(best_permutation)
+        costs = [f_diff(dist_matrix, best_permutation,pair[0],pair[1]) for pair in swapped_values]
+        print(costs,best_permutation)
         min_cost = min(costs)
         id = costs.index(min_cost)
-        if min_cost < best_cost[-1]:
+        if min_cost < 0:
             best_permutation = neighbors[id]
-            best_cost.append(min_cost)
+            best_cost.append(best_cost[-1] + min_cost)
             iters_done = iter
         else:
             iters_done = iter
@@ -386,11 +392,11 @@ def twoOpt(dist_matrix,  _permutation = None, max_iter = 1000):
     print("TwoOpt done at "+str(iters_done))
     return best_permutation, best_cost
 
-coordinates = generateCoordinates(20)
+coordinates = generateCoordinates(5)
 distMatrix = coordinatesToDistMatrix(coordinates)
 
-_, scores = tabuSearch(distMatrix.copy())
-plt.plot(scores, label='Tabu Search', color="blue")
+#_, scores = tabuSearch(distMatrix.copy())
+#plt.plot(scores, label='Tabu Search', color="blue")
 _, scores = twoOpt(distMatrix.copy())
 plt.plot(scores, label='TwoOpt', color="green")
 plt.title("TSP Benchmark Results")
